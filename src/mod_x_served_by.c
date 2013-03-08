@@ -82,8 +82,10 @@ static int xsb_fixups (request_rec *r) {
 		r->server->module_config, &x_served_by_module);
 
 	if(conf->enabled == 1) {
-		apr_table_setn(r->err_headers_out, conf->header_name,
-			conf->hostname);
+		if(!r->main) { 
+			apr_table_setn(r->err_headers_out, conf->header_name,
+				conf->hostname);
+		}
 	}
 
 	return DECLINED;
