@@ -58,11 +58,11 @@ static void *xsb_merge_server_config (apr_pool_t *p, void *basev,
 	return conf;
 }
 
-static const char *xsb_set_enabled (cmd_parms *cmd, void *config, int bool) {
+static const char *xsb_set_enabled (cmd_parms *cmd, void *config, int value) {
 	xsb_conf_t *conf = ap_get_module_config(
 		cmd->server->module_config, &x_served_by_module);
 
-	conf->enabled = bool;
+	conf->enabled = value;
 
 	return NULL;
 }
