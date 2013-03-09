@@ -88,16 +88,17 @@ static int xsb_post_config (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp,
 	xsb_conf_t *conf = ap_get_module_config(s->module_config,
 		&x_served_by_module);
 
-	if(conf->enabled = XSB_ENABLED) {
-		if((rv = apr_gethostname(hostname, APRMAXHOSTLEN, p)) !=
-				APR_SUCCESS) {
-			return HTTP_INTERNAL_SERVER_ERROR;
-		}
-
-		xsb_hostname = apr_pstrdup(p, hostname);
-		ap_log_error(APLOG_MARK, APLOG_INFO, 0, s,
-			"X-Served-By: %s", xsb_hostname);
+	if(conf->enabled != XSB_ENABLED) {
+		return DECLINED;
 	}
+
+	if((rv = apr_gethostname(hostname, APRMAXHOSTLEN, p)) != APR_SUCCESS) {
+		return HTTP_INTERNAL_SERVER_ERROR;
+	}
+
+	xsb_hostname = apr_pstrdup(p, hostname);
+	ap_log_error(APLOG_MARK, APLOG_INFO, 0, s,
+		"X-Served-By: %s", xsb_hostname);
 
 	return OK;
 }
