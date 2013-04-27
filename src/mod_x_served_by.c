@@ -82,8 +82,15 @@ static const char *xsb_set_header_name (cmd_parms *cmd, void *config,
 
 static int xsb_post_config (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp,
 		server_rec *s) {
+	/*
+	 * This method of determining the hostname and IP was
+	 * modelled after mod_unique_id
+	 */
+
+	char *ipstr;
 	char hostname[APRMAXHOSTLEN + 1];
 	apr_status_t rv;
+	apr_sockaddr_t *sockaddr;
 
 	xsb_conf_t *conf = ap_get_module_config(s->module_config,
 		&x_served_by_module);
@@ -93,10 +100,22 @@ static int xsb_post_config (apr_pool_t *p, apr_pool_t *plog, apr_pool_t *ptemp,
 	}
 
 	if((rv = apr_gethostname(hostname, APRMAXHOSTLEN, p)) != APR_SUCCESS) {
+		ap_log_error(APLOG_MARK, APLOG_ALERT, rv, s,
+			"unable to find hostname of the server");
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 
-	xsb_hostname = apr_pstrdup(p, hostname);
+	if((rv = apr_sockaddr_info_get(&sockaddr, hostname, APR_UNSPEC, 0,
+			APR_IPV4_ADDR_OK, p)) != APR_SUCCESS) {
+		ap_log_error(APLOG_MARK, APLOG_ALERT, rv, s,
+			"unable to find IP address of \"%s\"", hostname);
+		return HTTP_INTERNAL_SERVER_ERROR;
+	}
+
+	apr_sockaddr_ip_get(&ipstr, sockaddr);
+
+	xsb_hostname = apr_pstrcat(p, hostname, " (", ipstr, ")", NULL);
+
 	ap_log_error(APLOG_MARK, APLOG_INFO, 0, s,
 		"X-Served-By: %s", xsb_hostname);
 
