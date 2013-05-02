@@ -2,7 +2,7 @@ X-Served-By: hostname
 =====================
 
 This is an Apache module to add an `X-Served-By' header to the response whose
-value is the hostname of the system. [*]
+value is the hostname and IP of the system. [*]
 
 Add this to the server or virtual host config to enable the X-Served-By module:
 
